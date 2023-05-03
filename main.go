@@ -30,3 +30,18 @@ func randUserAgent() string {
 	randNum := rand.Int() % len(userAgents)
 	return userAgents[randNum]
 }
+
+func googleScrape()([]SearchResult, err) {
+	results := []SearchResult {}
+	resultCounter := 0
+	buildGoogleUrls()
+}
+
+func main() {
+	response, err := googleScrape("Haydn Meyburgh")
+	if err == nil {
+		for _, res := range response {
+			fmt.Println(res)
+		}
+	}
+}
