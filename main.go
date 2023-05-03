@@ -28,6 +28,7 @@ var userAgents = []string {
 
 // Selecting a random user agent
 func randUserAgent() string {
+	rand.Seed(time.Now().Unix())
 	randNum := rand.Int() % len(userAgents)
 	return userAgents[randNum]
 }
@@ -50,15 +51,40 @@ func buildGoogleUrls(searchTerm, countryCode, languageCode string, pages, count 
 }
 
 // Using google url to scrape results
-func googleScrape(searchTerm, countryCode, languageCode string, pages, count int)([]SearchResult, error) {
+func googleScrape(searchTerm, countryCode, languageCode string, proxyString interface{}, pages, count, backoff int)([]SearchResult, error) {
 	results := []SearchResult {}
 	resultCounter := 0
-	// returned url to scrape and error
+	// returns built google url and error
 	googlePages, err := buildGoogleUrls(searchTerm, countryCode, languageCode, pages, count)
+	if err != nil {
+		return nil, err
+	}
+	// each result from ranging through slice will be passed to 2 functions
+	for _, page := range googlePages {
+		// will return a response and error
+		res, err := scrapeClientRequest(page, proxyString)
+		if err != nil {
+			return nil, err
+		}
+		// will return data and error
+		data, err := googleParseResult(res, resultCounter)
+		if err != nil {
+			return nil, err
+		}
+		resultCounter += len(data)
+		for _, result := range data {
+			// Append result to results slice
+			results = append(results, result)
+		}
+		time.Sleep(time.Duration(backoff) * time.Second)
+	}
+	return results, nil
 }
 
+
+
 func main() {
-	response, err := googleScrape("Haydn Meyburgh", "en", "com", 1, 30)
+	response, err := googleScrape("Haydn Meyburgh", "com", "en", nil, 1, 30, 10)
 	if err == nil {
 		for _, res := range response {
 			fmt.Println(res)
