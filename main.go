@@ -11,7 +11,8 @@ import (
 )
 
 var googleDomains = map[string]string {
-
+	"com": "https://www.google.com/search?q=",
+	"za": "https://www.google.co.za/search?q=",
 }
 
 type SearchResult struct {
@@ -31,21 +32,33 @@ func randUserAgent() string {
 	return userAgents[randNum]
 }
 
-func buildGoogleUrls(searchTerm, countryCode)() {
+// Building google urls 
+func buildGoogleUrls(searchTerm, countryCode, languageCode string, pages, count int)([]string, error) {
 	toScrape := []string{}
 	searchTerm := strings.Trim(searchTerm, " ")
 	searchTerm := strings.Replace(searchTerm, " ", "+", -1)
-
+	if googleBase, found := googleDomains[countryCode]; found {
+		for i := 0; i < pages;  i++ {
+			start := i * count
+			scrapeUrl := fmt.Sprintf("%s%s&num=%d&hl=%s&start=%d&filter=0", googleBase, searchTerm, count, languageCode, start)
+		}
+	} else {
+		err := fmt.Errorf("Country (%s) is currently not support", countryCode)
+		return nil, err
+	}
+	return toScrape, nil
 }
 
-func googleScrape(searchTerm, countryCode)([]SearchResult, err) {
+// Using google url to scrape results
+func googleScrape(searchTerm, countryCode, languageCode string, pages, count int)([]SearchResult, error) {
 	results := []SearchResult {}
 	resultCounter := 0
-	googlePages, err := buildGoogleUrls(searchTerm, countryCode)
+	// returned url to scrape and error
+	googlePages, err := buildGoogleUrls(searchTerm, countryCode, languageCode, pages, count)
 }
 
 func main() {
-	response, err := googleScrape("Haydn Meyburgh", "com")
+	response, err := googleScrape("Haydn Meyburgh", "en", "com", 1, 30)
 	if err == nil {
 		for _, res := range response {
 			fmt.Println(res)
