@@ -42,6 +42,7 @@ func buildGoogleUrls(searchTerm, countryCode, languageCode string, pages, count 
 		for i := 0; i < pages;  i++ {
 			start := i * count
 			scrapeUrl := fmt.Sprintf("%s%s&num=%d&hl=%s&start=%d&filter=0", googleBase, searchTerm, count, languageCode, start)
+			toScrape = append(toScrape, scrapeUrl)
 		}
 	} else {
 		err := fmt.Errorf("Country (%s) is currently not support", countryCode)
@@ -81,7 +82,21 @@ func googleScrape(searchTerm, countryCode, languageCode string, proxyString inte
 	return results, nil
 }
 
+func scrapeClientRequest(searchUrl string, proxyString interface{})(*http.Response, error) {
+	baseClient := getScrapeClient(proxyString)
+	req, _ = http.NewRequest("GET", searchUrl, nil)
+	req.Header().Set("User-Agent", randUserAgent())
 
+	res, err := baseClient.Do(req)
+	if res.StatusCode != 200 {
+		err := fmt.Errorf("Scraper received a non 200 status code suggesting a ban")
+		return nil, err	
+	}
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
 
 func main() {
 	response, err := googleScrape("Haydn Meyburgh", "com", "en", nil, 1, 30, 10)
