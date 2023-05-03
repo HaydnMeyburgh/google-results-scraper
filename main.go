@@ -84,7 +84,7 @@ func googleScrape(searchTerm, countryCode, languageCode string, proxyString inte
 
 func scrapeClientRequest(searchUrl string, proxyString interface{})(*http.Response, error) {
 	baseClient := getScrapeClient(proxyString)
-	req, _ = http.NewRequest("GET", searchUrl, nil)
+	req, _ := http.NewRequest("GET", searchUrl, nil)
 	req.Header().Set("User-Agent", randUserAgent())
 
 	res, err := baseClient.Do(req)
@@ -96,6 +96,40 @@ func scrapeClientRequest(searchUrl string, proxyString interface{})(*http.Respon
 		return nil, err
 	}
 	return res, nil
+}
+
+func googleParseResult(response *http.Response, rank int)([]SearchResult, error) {
+	doc, err := goquery.NewDocumentFromResponse(response)
+	
+	if err != nil {
+		return nil, err
+	}
+	
+	results := []SearchResult{}
+	sel := doc.Find("div.g")
+	rank ++
+	for i := range sel.Nodes {
+		item := sel.Eq(i)
+		linkTag := item.Find("a")
+		link, _ := linkTag.Attr("href")
+		titleTage := item.Find("h3.r")
+		descTag := item.Find("span.st")
+		desc := descTag.Text()
+		title := titleTage.Text()
+		link = strings.Trim(link, " ")
+
+		if link != "" && link != "#" && !strings.HasPrefix(link, "/") {
+			result := SearchResult {
+				rank,
+				link,
+				title,
+				desc,
+			}
+			results = append(results, result)
+			rank++
+		} 
+	}
+	return results, err
 }
 
 func getScrapeClient(proxyString interface{}) *http.Client {
