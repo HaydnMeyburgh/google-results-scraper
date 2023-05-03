@@ -31,14 +31,21 @@ func randUserAgent() string {
 	return userAgents[randNum]
 }
 
-func googleScrape()([]SearchResult, err) {
+func buildGoogleUrls(searchTerm, countryCode)() {
+	toScrape := []string{}
+	searchTerm := strings.Trim(searchTerm, " ")
+	searchTerm := strings.Replace(searchTerm, " ", "+", -1)
+
+}
+
+func googleScrape(searchTerm, countryCode)([]SearchResult, err) {
 	results := []SearchResult {}
 	resultCounter := 0
-	buildGoogleUrls()
+	googlePages, err := buildGoogleUrls(searchTerm, countryCode)
 }
 
 func main() {
-	response, err := googleScrape("Haydn Meyburgh")
+	response, err := googleScrape("Haydn Meyburgh", "com")
 	if err == nil {
 		for _, res := range response {
 			fmt.Println(res)
